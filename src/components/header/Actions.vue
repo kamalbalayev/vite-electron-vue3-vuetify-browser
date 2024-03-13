@@ -1,89 +1,92 @@
 <script setup lang="ts">
 
+import HeaderMenu from "./Menu.vue";
+
+const props = defineProps<{ pageView: any }>()
+
+import {onMounted, ref, watch} from "vue";
 import useStore from '../../store';
 
 const store: any = useStore()
 
-!store.tabs.length && store.addNewTab()
+const searchText = ref<string | null>(store.getActiveTab().searchText || '')
+const searchInput = ref<HTMLInputElement>(null)
 
-const activePage = (): any => document.getElementById(`page-${store.activeTabId}`)
+const updateActiveTab = (): void => {
+
+    searchText.value = props.pageView().getURL()
+
+    store.updateActiveTab({
+        id: store.activeTabId,
+        searchText: props.pageView().getURL(),
+        title: props.pageView().getTitle()
+    })
+
+}
+
+const search = () => {
+
+    const text = searchText.value.toLowerCase().trim()
+    const regex = new RegExp('^(https?:\\/\\/)','i');
+
+    const url = (regex.test(text) ? text : `${store.getActiveTab().url}search?q=${text}`).replaceAll(' ', '+')
+
+    if (text) {
+        props.pageView().loadURL(url)
+        finishLoad()
+    }
+
+}
+
+const finishLoad = () => props.pageView()?.addEventListener('update-target-url', () => updateActiveTab())
+
+onMounted(() => setTimeout(()=> finishLoad(), 20))
+
+watch(() => store.activeTabId, () => {
+
+    searchText.value = store.getActiveTab().searchText || ''
+
+    setTimeout(()=> finishLoad(), 20)
+
+})
+
+watch(() => searchText.value, (value) => {
+    store.updateActiveTab({
+        id: store.activeTabId,
+        searchText: value,
+    })
+})
+
+const goToHome = (): void => {
+    props.pageView().goToIndex(0)
+    searchText.value = null
+}
 
 </script>
 
 <template>
-
-    <v-app-bar app flat density="compact" color="transparent" :height="56" class="py-0">
-
-        <v-tabs :model-value="store.activeTabId" :height="32" hide-slider center-active show-arrows class="mt-auto pl-2">
-            <template v-for="tab in store.tabs" :key="`page-tab-${tab.id}`">
-
-                <v-tab :value="tab.id" :title="tab.title" class="rounded-t-lg pr-2"
-                       :class="{'bg-surface': tab.id === store.activeTabId}"
-                       @click.self="store.setActiveTabId(tab.id)">
-
-                    <span class="d-flex" @click="store.setActiveTabId(tab.id)">
-                        <img :src="`https://www.google.com/s2/favicons?domain=${tab.url}`"
-                             :alt="tab.url" :height="16" :width="16" class="mr-2"/>
-
-                        {{ tab.title }}
-                    </span>
-
-                    <v-btn size="small" density="compact" icon variant="text" class="ml-2"
-                           @click="store.closeTab(tab.id)">
-                        <v-icon icon="mdi-close" size="small"/>
-                    </v-btn>
-
-                </v-tab>
-
-                <v-divider vertical inset class="mx-1"/>
-
-            </template>
-        </v-tabs>
-
-        <v-btn :height="32" :min-width="32" :width="32" variant="text"
-               class="mt-auto rounded-b-0 rounded-t-lg" @click="store.addNewTab">
-            <v-icon icon="mdi-plus"/>
-        </v-btn>
-
-        <template #append>
-
-            <v-btn rounded="0" :height="40" :min-width="40" :width="40" variant="text">
-                <v-icon icon="mdi-minus"/>
-            </v-btn>
-
-            <v-btn rounded="0" :height="40" :min-width="40" :width="40" variant="text">
-                <v-icon icon="mdi-crop-square"/>
-            </v-btn>
-
-            <v-btn rounded="0" :height="40" :min-width="40" :width="40" variant="text">
-                <v-icon icon="mdi-close"/>
-            </v-btn>
-
-        </template>
-
-    </v-app-bar>
-
-    <v-app-bar app flat density="compact">
+    <v-app-bar app flat density="compact" color="primary">
 
         <template #prepend>
 
-            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="activePage().goBack()">
+            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="pageView().goBack()">
                 <v-icon icon="mdi-arrow-left" size="small"/>
             </v-btn>
 
-            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="activePage().reload()">
+            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="pageView().reload()">
                 <v-icon icon="mdi-reload" size="small"/>
             </v-btn>
 
-            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="activePage().goToIndex(0)">
+            <v-btn icon variant="text" density="comfortable" class="mr-2" @click="goToHome">
                 <v-icon icon="mdi-home-outline" size="small"/>
             </v-btn>
 
         </template>
 
         <div class="flex-fill pr-2">
-            <v-text-field variant="solo-filled" flat density="compact" rounded hide-details
-                          placeholder="Search web address or enter">
+            <v-text-field v-model="searchText" ref="searchInput" variant="solo-filled" flat density="compact"
+                          rounded hide-details placeholder="Search web address or enter" bg-color="primary"
+                          @keydown.enter="search">
 
                 <template #prepend-inner>
                     <v-icon icon="mdi-magnify" size="small" start/>
@@ -100,10 +103,9 @@ const activePage = (): any => document.getElementById(`page-${store.activeTabId}
             </v-text-field>
         </div>
 
-        <template v-slot:append>
-            <v-app-bar-nav-icon density="comfortable"/>
+        <template #append>
+            <HeaderMenu :pageView="pageView"/>
         </template>
 
     </v-app-bar>
-
 </template>
