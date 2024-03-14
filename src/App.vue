@@ -1,30 +1,32 @@
 <script setup lang="ts">
 
-import HeaderTopBar from "./components/header/TopBar.vue";
+import HeaderTopBar from './components/header/TopBar.vue'
 
-const { ipcRenderer } = require('electron')
-import {onMounted, watch} from "vue";
-import {useTheme} from "vuetify";
-import useStore from './store';
+const {ipcRenderer} = require('electron')
+import {onMounted, watch} from "vue"
+import {useTheme} from 'vuetify'
+import useStore from './store'
 
-const store: any = useStore()
-const theme: any = useTheme()
+const store = useStore()
+const theme = useTheme()
 
-const setThemeColor = ()=> {
+const setThemeColor = () => {
 
+    /*Sets the color mode of the app*/
     ipcRenderer.invoke('theme', store.theme)
 
+    /*Sets color mode for Vuetify*/
     theme.global.name.value = store.theme === 'system'
         ? window.matchMedia
             ? window.matchMedia('(prefers-color-scheme: dark)').matches
                 ? 'dark'
                 : 'light'
             : 'light'
-        : store.theme;
+        : store.theme
 }
 
-onMounted(()=> setThemeColor())
-watch(()=> store.theme, ()=> setThemeColor())
+onMounted(() => setThemeColor())
+watch(() => store.theme, () => setThemeColor())
 
 </script>
 
@@ -43,7 +45,7 @@ watch(()=> store.theme, ()=> setThemeColor())
 </template>
 
 <style lang="scss">
-html{
+html {
     overflow: hidden;
 }
 </style>

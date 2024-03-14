@@ -1,21 +1,25 @@
-import { createApp } from "vue";
-import { createVuetify, ThemeDefinition } from 'vuetify';
-// eslint-disable-next-line import/no-unresolved
-import { aliases, mdi } from 'vuetify/iconsets/mdi';
-// eslint-disable-next-line import/no-unresolved
-import * as components from 'vuetify/components';
-// eslint-disable-next-line import/no-unresolved
-import * as directives from 'vuetify/directives';
-// eslint-disable-next-line import/no-unresolved
-import 'vuetify/styles';
-import '@mdi/font/css/materialdesignicons.min.css';
+import {createApp} from "vue"
+import {createVuetify, ThemeDefinition} from 'vuetify'
 
-import App from "./App.vue";
-import router from './router/index';
+// eslint-disable-next-line import/no-unresolved
+import {aliases, mdi} from 'vuetify/iconsets/mdi'
 
-import { createPinia, Pinia } from 'pinia'
+// eslint-disable-next-line import/no-unresolved
+import * as components from 'vuetify/components'
+
+// eslint-disable-next-line import/no-unresolved
+import * as directives from 'vuetify/directives'
+
+// eslint-disable-next-line import/no-unresolved
+import 'vuetify/styles'
+import '@mdi/font/css/materialdesignicons.min.css'
+
+import App from './App.vue'
+import router from './router/index'
+
+import {createPinia, Pinia} from 'pinia'
+
 const pinia: Pinia = createPinia()
-// import piniaPluginPersistedState from 'pinia-plugin-persistedstate'
 
 const light: ThemeDefinition = {
     dark: false,
@@ -25,7 +29,7 @@ const light: ThemeDefinition = {
         lighten: "#edeff5",
         primary: "#002a8d",
     },
-};
+}
 
 const dark: ThemeDefinition = {
     dark: true,
@@ -35,7 +39,7 @@ const dark: ThemeDefinition = {
         lighten: "#090f1b",
         primary: "#002a8d",
     },
-};
+}
 
 const vuetify = createVuetify(
     {
@@ -61,12 +65,11 @@ const vuetify = createVuetify(
         components,
         directives
     }
-);
+)
 
 const app = createApp(App)
 app.use(router)
 app.use(vuetify)
 app.use(pinia)
-// app.config.compilerOptions.isCustomElement = tag => tag.startsWith('WebView')
-//app.use(piniaPluginPersistedState)
-app.mount("#app");
+app.config.compilerOptions.isCustomElement = tag => tag === 'webview'
+app.mount("#app")

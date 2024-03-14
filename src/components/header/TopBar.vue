@@ -1,31 +1,41 @@
 <script setup lang="ts">
 
-const { ipcRenderer } = require('electron');
+import HeaderActions from './Actions.vue'
 
-import {ref} from "vue";
-import HeaderActions from "./Actions.vue";
+const {ipcRenderer} = require('electron')
 
-import useStore from '../../store';
-const store: any = useStore()
+import {ref} from 'vue'
+import useStore from '../../store'
 
-const pageView = (): any => document.getElementById(`page-${store.activeTabId}`)
+const store = useStore()
 
+/*
+* If the app is opened for the first time,
+* create the first tab
+* */
 !store.tabs.length && store.addNewTab()
 
-const isMaximized = ref<boolean>(false)
-
-const quitApp = (): void => {
-    ipcRenderer.invoke('quit-app')
-}
-
-const closeTab = (id: number)=> {
-    store.tabs.length === 1 && quitApp()
-    store.closeTab(id)
-}
+/*
+Check that the page is maximized
+* */
+const isMaximized = ref(false)
 
 ipcRenderer.on('isMaximized', (_event, value) => {
     isMaximized.value = value
 })
+
+/*
+* Function to close the app
+* */
+const quitApp = () => ipcRenderer.invoke('quit-app')
+
+/*
+* Function that closes the page
+* */
+const closeTab = (id: number) => {
+    store.tabs.length === 1 && quitApp()
+    store.closeTab(id)
+}
 
 </script>
 
@@ -33,14 +43,15 @@ ipcRenderer.on('isMaximized', (_event, value) => {
 
     <v-app-bar app flat density="compact" color="transparent" :height="56" class="top-bar">
 
-        <v-tabs :model-value="store.activeTabId" :height="32" hide-slider center-active show-arrows class="mt-auto pl-2">
+        <v-tabs :model-value="store.activeTabId" :height="32" hide-slider center-active show-arrows
+                class="mt-auto pl-2">
             <template v-for="tab in store.tabs" :key="`page-tab-${tab.id}`">
 
                 <v-tab :value="tab.id" :title="tab.title" class="rounded-t-lg px-2"
                        :class="{'bg-primary': tab.id === store.activeTabId}"
                        @click.self="store.setActiveTabId(tab.id)">
 
-                    <span class="d-flex align-center text-truncate text-none text-caption pr-2" style="max-width: 150px"
+                    <span class="d-flex align-center text-truncate text-none text-caption mr-2" style="max-width: 150px"
                           @click="store.setActiveTabId(tab.id)">
 
                         <img :src="`https://www.google.com/s2/favicons?domain=${tab.url}`"
@@ -92,24 +103,24 @@ ipcRenderer.on('isMaximized', (_event, value) => {
 
     </v-app-bar>
 
-    <HeaderActions :pageView="pageView"/>
+    <HeaderActions/>
 
 </template>
 
 <style lang="scss">
-.top-bar{
+.top-bar {
 
     user-select: none;
     -webkit-user-select: none;
     -webkit-app-region: drag;
 
-    .v-tabs, button{
+    .v-tabs, button {
         -webkit-app-region: none;
     }
 
-    .v-toolbar{
+    .v-toolbar {
 
-        &__append{
+        &__append {
             margin-right: 0 !important;
         }
     }

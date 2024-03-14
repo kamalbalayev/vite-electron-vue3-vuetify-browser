@@ -1,9 +1,10 @@
 <script setup lang="ts">
 
-defineProps<{ pageView: any }>()
+import {useComposable} from '../../composables'
+import useStore from '../../store'
 
-import useStore from '../../store';
-const store: any = useStore()
+const {pageView} = useComposable()
+const store = useStore()
 
 const themes = [
     {
